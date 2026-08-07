@@ -67,9 +67,9 @@ export default async function RootLayout({ children }: RootLayoutProps) {
       <body className="overflow-x-hidden">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
+          defaultTheme="dark"
+          enableSystem={false}
+          
         >
           <header className="fixed top-0 left-0 z-50 hidden w-full flex-row justify-between p-6 md:flex">
             <a
@@ -79,13 +79,21 @@ export default async function RootLayout({ children }: RootLayoutProps) {
               className="scale-100 transition-transform duration-300 hover:scale-110"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={logo} alt={`${companyName} Logo`} className="block size-6 dark:hidden" />
+              {logo && (
+                <img
+                  src={logo}
+                  alt={`${companyName} Logo`}
+                  className="block size-6 dark:hidden"
+                />
+              )}
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={logoDark ?? logo}
-                alt={`${companyName} Logo`}
-                className="hidden size-6 dark:block"
-              />
+              {(logoDark || logo) && (
+                <img
+                  src={logoDark || logo}
+                  alt={`${companyName} Logo`}
+                  className="hidden size-6 dark:block"
+                />
+              )}
             </a>
             <span className="text-foreground font-mono text-xs font-bold tracking-wider uppercase">
               Built with{' '}

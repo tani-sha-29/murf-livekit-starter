@@ -67,7 +67,7 @@ interface AgentChatInputProps {
   className?: string;
 }
 
-function AgentChatInput({ chatOpen, onSend = async () => {}, className }: AgentChatInputProps) {
+function AgentChatInput({ chatOpen, onSend = async () => { }, className }: AgentChatInputProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [isSending, setIsSending] = useState(false);
   const [message, setMessage] = useState<string>('');
@@ -288,8 +288,10 @@ export function AgentControlBar({
     <div
       aria-label="Voice assistant controls"
       className={cn(
-        'bg-background border-input/50 dark:border-muted flex flex-col border p-3 drop-shadow-md/3',
-        variant === 'livekit' ? 'rounded-[31px]' : 'rounded-lg',
+        'flex flex-col border border-emerald-900/10 bg-white/90 p-3 shadow-[0_15px_50px_rgba(20,83,45,0.10)] backdrop-blur-xl',
+        variant === 'livekit'
+          ? 'rounded-[28px]'
+          : 'rounded-2xl',
         className
       )}
       {...props}
@@ -307,8 +309,8 @@ export function AgentControlBar({
         />
       </motion.div>
 
-      <div className="flex gap-1">
-        <div className="flex grow gap-1">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex grow items-center gap-2">
           {/* Toggle Microphone */}
           {visibleControls.microphone && (
             <AgentTrackControl
@@ -393,7 +395,7 @@ export function AgentControlBar({
             disabled={!isConnected}
             className={cn(
               variant === 'livekit' &&
-                'bg-destructive/10 dark:bg-destructive/10 text-destructive hover:bg-destructive/20 dark:hover:bg-destructive/20 focus:bg-destructive/20 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/4 rounded-full font-mono text-xs font-bold tracking-wider'
+             'rounded-full border border-red-200 bg-red-50 px-4 text-xs font-semibold tracking-wide text-red-600 hover:bg-red-100'
             )}
           >
             <span className="hidden md:inline">END CALL</span>
