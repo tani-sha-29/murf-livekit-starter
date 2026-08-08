@@ -96,14 +96,14 @@ export default async function RootLayout({ children }: RootLayoutProps) {
               )}
             </a>
             <span className="text-foreground font-mono text-xs font-bold tracking-wider uppercase">
-              Built with{' '}
+              Saarthi{' '}
               <a
                 target="_blank"
                 rel="noopener noreferrer"
                 href="https://docs.livekit.io/agents"
                 className="underline underline-offset-4"
               >
-                LiveKit Agents
+                एक नई राह
               </a>
             </span>
           </header>

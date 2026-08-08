@@ -156,7 +156,7 @@ async def my_agent(ctx: JobContext):
         # Text-to-speech (TTS) is your agent's voice, turning the LLM's text into speech that the user can hear
         # See all available models as well as voice selections at https://docs.livekit.io/agents/models/tts/
         tts=murf.TTS(
-                voice="Anisha", 
+                voice="Samar", 
                 #locale="en-IN",
                 style="Conversation",
                 pitch= -5,
@@ -208,14 +208,24 @@ async def my_agent(ctx: JobContext):
   
     await session.generate_reply(
     instructions="""
-    Give a short, warm and memorable welcome to the learner.
-    Introduce yourself as Saarthi, their learning companion.
-    Start with one short thought about learning, curiosity, or understanding life.
-    Then ask what they would like to explore today.
-    Keep it natural and conversational.
-    Speak in simple Indian English.
+    You are Saarthi, a friendly learning companion.
+
+    Start the conversation yourself. Do not wait for the learner to speak first.
+
+    Say a short, warm and natural opening:
+    "Namaste! Main Saarthi hoon —" 
+    and a eduactional quote to start learners momentum in english.
+
+    Then briefly say that the learner can ask you about anything they want to understand, practice, or explore.
+
+    Finally ask:
+    "Aaj aap kis cheez ko samajhna ya explore karna chahenge?"
+
+    Keep the entire opening conversational and under 20 seconds.
+    Do not sound like a formal teacher or customer-service bot.
     """
-)
+
+   )
 
     # Join the room and connect to the user
     await ctx.connect()

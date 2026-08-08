@@ -118,11 +118,11 @@ export function TileLayout({
               chatOpen && !hasSecondTile && tileViewClassNames.agentChatOpenWithoutSecondTile,
             ])}
           >
-            <AnimatePresence mode="popLayout">
+            <AnimatePresence mode="wait">
               {!isAvatar && (
                 // Audio Agent
                 <motion.div
-                  key="agent"
+                  key="audio-agent"
                   layoutId="agent"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -132,7 +132,7 @@ export function TileLayout({
                   }}
                   className={cn('relative aspect-square h-[90px]')}
                 >
-                  <AudioVisualizer
+                  {/* <AudioVisualizer
                     key="audio-visualizer"
                     initial={{ scale: 1 }}
                     animate={{ scale: chatOpen ? 0.2 : 1 }}
@@ -156,11 +156,11 @@ export function TileLayout({
                       chatOpen && 'border-input shadow-2xl/10 delay-200'
                     )}
                     style={{ color: audioVisualizerColor }}
-                  />
+                  /> */}
                 </motion.div>
               )}
 
-              {isAvatar && (
+              {/* {isAvatar && (
                 // Avatar Agent
                 <motion.div
                   key="avatar"
@@ -200,47 +200,39 @@ export function TileLayout({
                     className={cn(chatOpen && 'size-[90px] object-cover')}
                   />
                 </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <div
-            className={cn([
-              'grid',
-              chatOpen && tileViewClassNames.secondTileChatOpen,
-              !chatOpen && tileViewClassNames.secondTileChatClosed,
-            ])}
-          >
-            {/* Camera & Screen Share */}
-            <AnimatePresence>
-              {((cameraTrack && isCameraEnabled) || (screenShareTrack && isScreenShareEnabled)) && (
+              )} */}
+              {!isAvatar && (
                 <motion.div
-                  key="camera"
-                  layout="position"
-                  layoutId="camera"
-                  initial={{
-                    opacity: 0,
-                    scale: 0,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    scale: 1,
-                  }}
-                  exit={{
-                    opacity: 0,
-                    scale: 0,
-                  }}
+                  key="agent"
+                  layoutId="agent"
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
                   transition={{
                     ...ANIMATION_TRANSITION,
                     delay: animationDelay,
                   }}
-                  className="aspect-square size-[90px] drop-shadow-lg/20"
+                  className="relative flex h-full w-full items-center justify-center overflow-hidden"
                 >
-                  <VideoTrack
-                    trackRef={cameraTrack || screenShareTrack}
-                    width={(cameraTrack || screenShareTrack)?.publication.dimensions?.width ?? 0}
-                    height={(cameraTrack || screenShareTrack)?.publication.dimensions?.height ?? 0}
-                    className="bg-muted aspect-square size-[90px] rounded-md object-cover"
+                  {/* Soft background glow */}
+                  <div className="pointer-events-none absolute inset-0">
+                    <div className="absolute left-1/2 top-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-300/20 blur-[100px]" />
+                    <div className="absolute left-[30%] top-[35%] h-[260px] w-[260px] rounded-full bg-pink-300/15 blur-[90px]" />
+                    <div className="absolute right-[25%] bottom-[20%] h-[220px] w-[220px] rounded-full bg-yellow-200/20 blur-[90px]" />
+                  </div>
+
+                  {/* Saarthi background illustration */}
+                  <motion.img
+                    src="/speaking.png"
+                    alt="Saarthi"
+                    className="relative z-10 h-[70vh] max-h-[650px] w-auto max-w-[90vw] object-contain"
+                    animate={{
+                      y: [0, -5, 0],
+                    }}
+                    transition={{
+                      duration: 4,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                    }}
                   />
                 </motion.div>
               )}

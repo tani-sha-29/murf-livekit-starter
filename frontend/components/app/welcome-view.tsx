@@ -1,65 +1,183 @@
-import { Button } from '@/components/ui/button';
+'use client';
 
-function WelcomeImage() {
-  return (
-    <svg
-      width="64"
-      height="64"
-      viewBox="0 0 64 64"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="text-fg0 mb-4 size-16"
-    >
-      <path
-        d="M15 24V40C15 40.7957 14.6839 41.5587 14.1213 42.1213C13.5587 42.6839 12.7956 43 12 43C11.2044 43 10.4413 42.6839 9.87868 42.1213C9.31607 41.5587 9 40.7957 9 40V24C9 23.2044 9.31607 22.4413 9.87868 21.8787C10.4413 21.3161 11.2044 21 12 21C12.7956 21 13.5587 21.3161 14.1213 21.8787C14.6839 22.4413 15 23.2044 15 24ZM22 5C21.2044 5 20.4413 5.31607 19.8787 5.87868C19.3161 6.44129 19 7.20435 19 8V56C19 56.7957 19.3161 57.5587 19.8787 58.1213C20.4413 58.6839 21.2044 59 22 59C22.7956 59 23.5587 58.6839 24.1213 58.1213C24.6839 57.5587 25 56.7957 25 56V8C25 7.20435 24.6839 6.44129 24.1213 5.87868C23.5587 5.31607 22.7956 5 22 5ZM32 13C31.2044 13 30.4413 13.3161 29.8787 13.8787C29.3161 14.4413 29 15.2044 29 16V48C29 48.7957 29.3161 49.5587 29.8787 50.1213C30.4413 50.6839 31.2044 51 32 51C32.7956 51 33.5587 50.6839 34.1213 50.1213C34.6839 49.5587 35 48.7957 35 48V16C35 15.2044 34.6839 14.4413 34.1213 13.8787C33.5587 13.3161 32.7956 13 32 13ZM42 21C41.2043 21 40.4413 21.3161 39.8787 21.8787C39.3161 22.4413 39 23.2044 39 24V40C39 40.7957 39.3161 41.5587 39.8787 42.1213C40.4413 42.6839 41.2043 43 42 43C42.7957 43 43.5587 42.6839 44.1213 42.1213C44.6839 41.5587 45 40.7957 45 40V24C45 23.2044 44.6839 22.4413 44.1213 21.8787C43.5587 21.3161 42.7957 21 42 21ZM52 17C51.2043 17 50.4413 17.3161 49.8787 17.8787C49.3161 18.4413 49 19.2044 49 20V44C49 44.7957 49.3161 45.5587 49.8787 46.1213C50.4413 46.6839 51.2043 47 52 47C52.7957 47 53.5587 46.6839 54.1213 46.1213C54.6839 45.5587 55 44.7957 55 44V20C55 19.2044 54.6839 18.4413 54.1213 17.8787C53.5587 17.3161 52.7957 17 52 17Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
+import { Button } from '@/components/ui/button';
+import { ArrowRight, Sparkles, BookOpen, MessageCircle, Globe2 } from 'lucide-react';
 
 interface WelcomeViewProps {
   startButtonText: string;
   onStartCall: () => void;
+  callEnded?: boolean;
+  micError?: boolean;
+
 }
 
 export const WelcomeView = ({
   startButtonText,
   onStartCall,
+  callEnded = false,
+  micError = false,
   ref,
 }: React.ComponentProps<'div'> & WelcomeViewProps) => {
   return (
-    <div ref={ref}>
-      <section className="bg-background flex flex-col items-center justify-center text-center">
-        <WelcomeImage />
+    <main className="min-h-screen overflow-y-auto bg-[#FFFDF7] px-5 py-8 text-[#242321] md:px-10">
+      
+      {/* TOP BRAND */}
+      <header className="mx-auto flex max-w-6xl items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-black tracking-tight md:text-3xl">
+            Saarthi
+          </h1>
+          <p className="text-sm text-[#777268]">
+            एक नई राह
+          </p>
+        </div>
 
-        <p className="text-foreground max-w-prose pt-1 leading-6 font-medium">
-          Chat live with your voice AI agent
-        </p>
+        <div className="hidden items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm shadow-sm md:flex">
+          <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
+          Your learning companion
+        </div>
+      </header>
 
-        <Button
-          size="lg"
-          onClick={onStartCall}
-          className="mt-6 w-64 rounded-full font-mono text-xs font-bold tracking-wider uppercase"
-        >
-          {startButtonText}
-        </Button>
+      {/* HERO */}
+      <section className="mx-auto grid max-w-6xl items-center gap-6 pt-8 md:grid-cols-2 md:pt-12">
+
+        {/* LEFT */}
+        <div className="order-2 text-center md:order-1 md:text-left">
+
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#F5D76E] bg-[#FFF4B8] px-4 py-2 text-sm font-semibold shadow-sm">
+            <Sparkles size={16} />
+            Learn · Explore · Grow
+          </div>
+
+          <h2 className="mx-auto max-w-xl text-5xl font-black leading-[0.95] tracking-[-0.04em] md:mx-0 md:text-7xl">
+            A new way to
+            <span className="block bg-gradient-to-r from-[#7C3AED] via-[#EC4899] to-[#F59E0B] bg-clip-text text-transparent">
+              learn through
+            </span>
+            conversation.
+          </h2>
+
+          <p className="mx-auto mt-7 max-w-xl text-base leading-7 text-[#6e6a62] md:mx-0 md:text-lg">
+            {micError
+              ? 'Saarthi needs access to your microphone to have a voice conversation.'
+              : callEnded
+              ? 'Your conversation has ended. Start again whenever you are ready.'
+              : "Hi, I'm Saarthi. Ask questions, explore ideas, practice skills, or simply start a conversation."}
+          </p>
+          {micError && (
+            <div className="mx-auto mt-5 max-w-xl rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-left shadow-sm md:mx-0">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 text-xl">
+                  🎙️
+                </div>
+
+                <div>
+                  <p className="font-bold text-red-900">
+                    Microphone access is blocked
+                  </p>
+
+                  <p className="mt-1 text-sm leading-6 text-red-700">
+                    Please allow microphone access in your browser settings,
+                    then click Start Again.
+                  </p>
+
+                  <p className="mt-2 text-xs leading-5 text-red-600">
+                    In Chrome, click the 🔒 icon near the website address →
+                    Microphone → Allow → reload the page.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <Button
+            size="lg"
+            onClick={onStartCall}
+            className="mt-8 h-14 w-full max-w-sm rounded-full bg-gradient-to-r from-[#7C3AED] to-[#EC4899] text-base font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
+          >
+            🎙️ {micError ? 'TRY AGAIN' :startButtonText}
+            <ArrowRight className="ml-2" size={20} />
+          </Button>
+
+        </div>
+
+        {/* RIGHT — YOUR ILLUSTRATION */}
+        <div className="relative order-1 flex min-h-[360px] items-center justify-center md:order-2 md:min-h-[500px]">
+
+          {/* floating label */}
+          <div className="absolute right-2 top-8 z-20 rounded-2xl border border-black/10 bg-[#DFF7E8] px-4 py-3 text-sm font-semibold shadow-lg md:right-10">
+            👋 Hi!
+          </div>
+
+          {/* small decorative element */}
+          <div className="absolute left-5 top-16 text-3xl text-[#777268]">
+            ✦
+          </div>
+
+          {/* IMAGE */}
+          <img
+            src="/opengraph-image-bg.png"
+            alt="Saarthi learning companion"
+            className="relative z-10 h-auto w-[310px] object-contain mix-blend-multiply md:w-[780px]"
+          />
+
+          {/* floating bottom bubble */}
+          <div className="absolute bottom-5 left-5 z-20 rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm shadow-lg">
+            💡 Ask me anything
+          </div>
+
+        </div>
       </section>
 
-      <div className="fixed bottom-5 left-0 flex w-full items-center justify-center">
-        <p className="text-muted-foreground max-w-prose pt-1 text-xs leading-5 font-normal text-pretty md:text-sm">
-          Need help getting set up? Check out the{' '}
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            href="https://docs.livekit.io/agents/start/voice-ai/"
-            className="underline"
-          >
-            Voice AI quickstart
-          </a>
-          .
-        </p>
-      </div>
-    </div>
+      {/* USE CASE CARDS */}
+      <section className="mx-auto mt-8 grid max-w-6xl grid-cols-1 gap-4 pb-10 sm:grid-cols-2 md:grid-cols-3">
+
+        <div className="group rounded-3xl border border-black/10 bg-white/90 p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg">
+          <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FFF0C2]">
+            <BookOpen size={21} />
+          </div>
+
+          <h3 className="font-bold">Learn something new</h3>
+
+          <p className="mt-2 text-sm leading-6 text-[#777268]">
+            Understand school subjects, concepts and everyday knowledge
+            through simple conversations.
+          </p>
+        </div>
+
+        <div className="group rounded-3xl border border-black/10 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg">
+          <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#E9DDFF]">
+            <MessageCircle size={21} />
+          </div>
+
+          <h3 className="font-bold">Practice & ask</h3>
+
+          <p className="mt-2 text-sm leading-6 text-[#777268]">
+            Ask questions naturally. Speak in English, Hindi or Hinglish
+            and learn at your own pace.
+          </p>
+        </div>
+
+        <div className="group rounded-3xl border border-black/10 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg">
+          <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#DDF7E8]">
+            <Globe2 size={21} />
+          </div>
+
+          <h3 className="font-bold">Explore the world</h3>
+
+          <p className="mt-2 text-sm leading-6 text-[#777268]">
+            Build curiosity, confidence, communication skills and
+            practical understanding.
+          </p>
+        </div>
+
+      </section>
+
+      {/* FOOTER */}
+      <p className="pb-5 text-center text-xs text-[#99948a]">
+        Saarthi · एक नई राह
+      </p>
+
+    </main>
   );
 };
