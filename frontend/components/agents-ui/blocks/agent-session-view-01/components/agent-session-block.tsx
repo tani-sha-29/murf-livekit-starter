@@ -304,7 +304,7 @@ export function AgentSessionView_01({
 
   const currentState =
     stateInfo[
-      agentState as keyof typeof stateInfo
+    agentState as keyof typeof stateInfo
     ] ?? stateInfo.idle;
 
   /* -----------------------------------------------------
@@ -347,14 +347,20 @@ export function AgentSessionView_01({
                 agentState={agentState}
                 messages={messages}
                 className="
-                  mx-auto
-                  w-full
-                  max-w-2xl
-                  [&_.is-user>div]:rounded-[22px]
-                  [&>div>div]:px-4
-                  [&>div>div]:pt-40
-                  md:[&>div>div]:px-6
-                "
+    mx-auto
+    w-full
+    max-w-2xl
+    bg-transparent
+    [&_.is-user>div]:rounded-[22px]
+    [&_.is-user>div]:bg-violet-100/90
+    [&_.is-user>div]:text-gray-900
+    [&_.is-agent>div]:rounded-[22px]
+    [&_.is-agent>div]:bg-white/70
+    [&_.is-agent>div]:text-gray-900
+    [&>div>div]:px-4
+    [&>div>div]:pt-32
+    md:[&>div>div]:px-6
+  "
               />
             </motion.div>
           )}
@@ -452,13 +458,13 @@ export function AgentSessionView_01({
               animate={{
                 scale:
                   agentState === 'speaking' ||
-                  agentState === 'listening'
+                    agentState === 'listening'
                     ? [1, 1.3, 1]
                     : 1,
 
                 opacity:
                   agentState === 'speaking' ||
-                  agentState === 'listening'
+                    agentState === 'listening'
                     ? [0.7, 1, 0.7]
                     : 1,
               }}
@@ -468,7 +474,7 @@ export function AgentSessionView_01({
 
                 repeat:
                   agentState === 'speaking' ||
-                  agentState === 'listening'
+                    agentState === 'listening'
                     ? Infinity
                     : 0,
               }}
@@ -526,11 +532,11 @@ export function AgentSessionView_01({
         "
       >
 
-        {/* -------------------------------------------------
+        {/* {/* -------------------------------------------------
             Status text above controls
         ------------------------------------------------- */}
 
-        {isPreConnectBufferEnabled && (
+        {/* {isPreConnectBufferEnabled && (
 
           <AnimatePresence>
 
@@ -557,8 +563,8 @@ export function AgentSessionView_01({
 
           </AnimatePresence>
 
-        )}
-
+        )} */ 
+        }
         {/* -------------------------------------------------
             Control bar
         ------------------------------------------------- */}

@@ -64,7 +64,7 @@ export function AgentChatTranscript({
           return (
             <Message key={id} title={title} from={messageOrigin}>
               <MessageContent>
-                <MessageResponse>{message}</MessageResponse>
+                <MessageResponse className="text-[#3f3b35]">{message}</MessageResponse>
               </MessageContent>
             </Message>
           );

@@ -170,7 +170,18 @@ export const WelcomeView = ({
             practical understanding.
           </p>
         </div>
+        <div className="group rounded-3xl border border-black/10 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg">
+          <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#DDF7E8]">
+            <Globe2 size={21} />
+          </div>
 
+          <h3 className="font-bold">Study with your Documents</h3>
+
+          <p className="mt-2 text-sm leading-6 text-[#777268]">
+            Upload your documents and get answers based on them. 
+            You can upload PDFs, Word documents, and more.
+          </p>
+        </div>
       </section>
 
       {/* FOOTER */}

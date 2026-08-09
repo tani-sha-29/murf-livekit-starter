@@ -1,13 +1,19 @@
 import logging
+import os
+import json
+import mysql.connector
 
 from dotenv import load_dotenv
 from livekit import rtc
+from typing import Any,cast
 from livekit.agents import (
     Agent,
     AgentServer,
     AgentSession,
     JobContext,
     JobProcess,
+    RunContext,
+    function_tool,
     cli,
     inference,
     tokenize,
@@ -19,6 +25,55 @@ from livekit.plugins.turn_detector.multilingual import MultilingualModel
 logger = logging.getLogger("agent")
 
 load_dotenv(".env.local")
+def get_user_memory(user_id: str)-> dict[str, Any] | None:
+    try:
+        connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="3200m1@sql54*y",
+            database="saarthi"
+        )
+
+        cursor = connection.cursor(dictionary=True)
+        print("QUERY USER ID:", user_id)
+        print("DATABASE:", connection.database)
+
+        cursor.execute(
+            """
+            SELECT user_id, name, learning_level,
+                   topics_covered, recurring_mistakes
+            FROM user_memory
+            WHERE user_id = %s
+            """,
+            (user_id,)
+        )
+        memory = cursor.fetchone()
+
+        print("USER MEMORY:", memory)
+
+        if memory is None:
+            cursor.close()
+            connection.close()
+            return None
+
+
+        cursor.close()
+        connection.close()
+
+        return cast(dict[str, Any], memory)
+
+    except Exception as e:
+        logger.error(f"Memory lookup failed: {e}")
+        return None
+    
+def get_db_connection():
+    return mysql.connector.connect(
+        host=os.getenv("MYSQL_HOST"),
+        port=int(os.getenv("MYSQL_PORT", "3306")),
+        user=os.getenv("MYSQL_USER"),
+        password=os.getenv("MYSQL_PASSWORD"),
+        database=os.getenv("MYSQL_DATABASE"),
+    )
 
 # Change this prompt to change what your voice agent does.
 # See README.md for example prompts (customer support, language tutor, receptionist).
@@ -89,6 +144,36 @@ CONTEXT RULES:
 - If the question is ambiguous, ask a short clarifying question.
 - If you don't know something and have no refernce about the topic,strictly avoid to generate irrelevant info and tell that you are just a learning agent and have no access to personal infor which is not shared.
 
+MEMORY RULES:
+
+You have access to two memory tools:
+
+1. lookup_user
+   - Use this to check whether the current learner has been seen before.
+   - Use the learner's user ID.
+   - If memory exists, use it naturally to understand the learner's previous progress.
+
+2. save_memory
+   - Use this only after the learner explicitly agrees that Saarthi may remember the information.
+   - Never save personal learning information without permission.
+   - Save useful learning information such as:
+     - name
+     - learning level
+     - topics covered
+     - recurring mistakes
+
+When a returning learner is identified:
+- Greet them naturally by name.
+- Use their previous learning information when relevant.
+- Continue from where they left off instead of behaving as if this is the first conversation.
+
+When you learn useful information about a learner:
+- Ask for permission before saving it.
+- Example:
+  "Would you like me to remember that so I can help you better next time?"
+- If the learner says yes, use save_memory.
+- If the learner says no, do not save it.
+
 GUARDRAILS:
 - Never shame, insult, or discourage someone for giving a wrong answer.
 - Never claim that someone has a learning disability or medical condition.
@@ -104,25 +189,121 @@ You are speaking aloud, so avoid long paragraphs, complex formatting, emojis, an
 
 
 class Assistant(Agent):
-    def __init__(self) -> None:
-        super().__init__(instructions=SYSTEM_PROMPT)
+    def __init__(self, memory_context: str) -> None:
+        super().__init__(
+            instructions=f"""
+{SYSTEM_PROMPT}
 
-    # To add tools, use the @function_tool decorator.
-    # Here's an example that adds a simple weather tool.
-    # You also have to add `from livekit.agents import function_tool, RunContext` to the top of this file
-    # @function_tool
-    # async def lookup_weather(self, context: RunContext, location: str):
-    #     """Use this tool to look up current weather information in the given location.
-    #
-    #     If the location is not supported by the weather service, the tool will indicate this. You must tell the user the location's weather is unavailable.
-    #
-    #     Args:
-    #         location: The location to look up weather information for (e.g. city name)
-    #     """
-    #
-    #     logger.info(f"Looking up weather for {location}")
-    #
-    #     return "sunny with a temperature of 70 degrees."
+LEARNER MEMORY:
+
+{memory_context}
+
+Use the learner memory only when relevant.
+Do not reveal internal database information.
+Do not mention MySQL, database, memory_context, or tools to the learner.
+"""
+        )
+
+    @function_tool()
+    async def lookup_user(
+        self,
+        context: RunContext,
+        user_id: str,
+    ) -> dict:
+        """Look up an existing learner's memory using their user ID."""
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        try:
+            cursor.execute(
+                """
+                SELECT
+                    user_id,
+                    name,
+                    learning_level,
+                    topics_covered,
+                    recurring_mistakes,
+                    last_interaction
+                FROM user_memory
+                WHERE user_id = %s
+                """,
+                (user_id,)
+            )
+
+            user = cursor.fetchone()
+
+            if user:
+                return {
+                    "found": True,
+                    "user": user,
+                }
+
+            return {
+                "found": False,
+                "message": "No memory found for this learner."
+            }
+
+        finally:
+            cursor.close()
+            conn.close()
+
+
+    @function_tool()
+    async def save_memory(
+        self,
+        context: RunContext,
+        user_id: str,
+        name: str,
+        learning_level: str = "",
+        topics_covered: str = "",
+        recurring_mistakes: str = "",
+    ) -> str:
+        """Save or update useful learning information about the current learner.
+
+        Only use this after the learner has explicitly agreed to remember
+        the information.
+        """
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute(
+                """
+                INSERT INTO user_memory (
+                    user_id,
+                    name,
+                    learning_level,
+                    topics_covered,
+                    recurring_mistakes
+                )
+                VALUES (%s, %s, %s, %s, %s)
+                ON DUPLICATE KEY UPDATE
+                    name = VALUES(name),
+                    learning_level = VALUES(learning_level),
+                    topics_covered = VALUES(topics_covered),
+                    recurring_mistakes = VALUES(recurring_mistakes),
+                    last_interaction = CURRENT_TIMESTAMP
+                """,
+                (
+                    user_id,
+                    name,
+                    learning_level,
+                    topics_covered,
+                    recurring_mistakes,
+                )
+            )
+
+            conn.commit()
+
+            return "Learner memory saved successfully."
+
+        finally:
+            cursor.close()
+            conn.close()
+
+   
 
 
 server = AgentServer()
@@ -137,6 +318,27 @@ server.setup_fnc = prewarm
 
 @server.rtc_session(agent_name="my-agent")
 async def my_agent(ctx: JobContext):
+    user_id = "user_001"
+
+    user_memory = get_user_memory(user_id)
+
+    if user_memory:
+        memory_context = f"""
+        The current learner's saved information is:
+
+        Name: {user_memory.get('name')}
+        Learning level: {user_memory.get('learning_level')}
+        Topics previously covered: {user_memory.get('topics_covered')}
+        Recurring mistakes: {user_memory.get('recurring_mistakes')}
+
+        Use this information naturally when relevant.
+Do not claim to remember information that is not present here.
+"""
+    else:
+        memory_context = """
+    No previous learner information is available.
+    Treat this as a new learner.
+    """    
     # Logging setup
     # Add any other context you want in all log entries here
     ctx.log_context_fields = {
@@ -144,6 +346,7 @@ async def my_agent(ctx: JobContext):
     }
 
     # Set up a voice AI pipeline using Murf Falcon, Gemini, Deepgram, and the LiveKit turn detector
+    
     session = AgentSession(
         # Speech-to-text (STT) is your agent's ears, turning the user's speech into text that the LLM can understand
         # See all available models at https://docs.livekit.io/agents/models/stt/
@@ -192,7 +395,7 @@ async def my_agent(ctx: JobContext):
 
     # Start the session, which initializes the voice pipeline and warms up the models
     await session.start(
-        agent=Assistant(),
+    agent=Assistant(memory_context),
         room=ctx.room,
         room_options=room_io.RoomOptions(
             audio_input=room_io.AudioInputOptions(
@@ -232,4 +435,6 @@ async def my_agent(ctx: JobContext):
 
 
 if __name__ == "__main__":
-    cli.run_app(server)
+     cli.run_app(server)
+
+
