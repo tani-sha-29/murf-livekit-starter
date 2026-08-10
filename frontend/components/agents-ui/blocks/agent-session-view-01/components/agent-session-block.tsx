@@ -217,7 +217,7 @@ export function AgentSessionView_01({
 
   const session = useSessionContext();
 
-  const { messages } = useSessionMessages(session);
+  const { messages,send } = useSessionMessages(session);
 
   const { state: agentState } = useAgent();
 
@@ -226,6 +226,7 @@ export function AgentSessionView_01({
   ----------------------------------------------------- */
 
   const [chatOpen, setChatOpen] = useState(false);
+  const practiceStarted = useRef(false);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -259,6 +260,24 @@ export function AgentSessionView_01({
         scrollAreaRef.current.scrollHeight;
     }
   }, [messages]);
+
+  //----------------------------------------------------
+  useEffect(() => {
+  if (!session.isConnected || practiceStarted.current) {
+    return;
+  }
+
+  const isJavaPractice =
+    window.location.pathname === '/practice/java';
+
+  if (isJavaPractice) {
+    practiceStarted.current = true;
+
+    send(
+      'Start a Java beginner practice session. Give me one practice question from the learning library.'
+    );
+  }
+}, [session.isConnected, send]);
 
   /* -----------------------------------------------------
      Saarthi states

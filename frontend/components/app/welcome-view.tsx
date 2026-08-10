@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Sparkles, BookOpen, MessageCircle, Globe2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface WelcomeViewProps {
   startButtonText: string;
@@ -18,6 +19,8 @@ export const WelcomeView = ({
   micError = false,
   ref,
 }: React.ComponentProps<'div'> & WelcomeViewProps) => {
+  const router = useRouter();
+
   return (
     <main className="min-h-screen overflow-y-auto bg-[#FFFDF7] px-5 py-8 text-[#242321] md:px-10">
       
@@ -145,7 +148,10 @@ export const WelcomeView = ({
           </p>
         </div>
 
-        <div className="group rounded-3xl border border-black/10 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg">
+        <button
+          type="button"
+          onClick={() => router.push('/practice')}
+          className="group rounded-3xl border border-black/10 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg">
           <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#E9DDFF]">
             <MessageCircle size={21} />
           </div>
@@ -156,7 +162,7 @@ export const WelcomeView = ({
             Ask questions naturally. Speak in English, Hindi or Hinglish
             and learn at your own pace.
           </p>
-        </div>
+        </button>
 
         <div className="group rounded-3xl border border-black/10 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg">
           <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#DDF7E8]">

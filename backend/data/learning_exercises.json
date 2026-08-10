@@ -1,0 +1,38 @@
+[
+  {
+    "topic": "Java",
+    "level": "beginner",
+    "question": "What is a class in Java?",
+    "source": "Saarthi Learning Library"
+  },
+  {
+    "topic": "Java",
+    "level": "beginner",
+    "question": "What is an object in Java?",
+    "source": "Saarthi Learning Library"
+  },
+  {
+    "topic": "Java",
+    "level": "beginner",
+    "question": "What is inheritance in Java?",
+    "source": "Saarthi Learning Library"
+  },
+  {
+    "topic": "Spring Boot",
+    "level": "beginner",
+    "question": "What is Spring Boot used for?",
+    "source": "Saarthi Learning Library"
+  },
+  {
+    "topic": "Spring Boot",
+    "level": "beginner",
+    "question": "What is a REST API?",
+    "source": "Saarthi Learning Library"
+  },
+  {
+    "topic": "Python",
+    "level": "beginner",
+    "question": "What is a list in Python?",
+    "source": "Saarthi Learning Library"
+  }
+]

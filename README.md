@@ -275,4 +275,30 @@ For deeper documentation on each part, see:
 
 ## License
 
+## Custom Learning Exercise Library
+
+Saarthi uses a custom learning exercise dataset instead of relying
+entirely on the LLM to generate practice questions.
+
+The current learning library is stored in:
+
+`backend/data/learning_exercises.json`
+
+Each exercise contains:
+
+- Topic
+- Difficulty level
+- Question
+- Source
+
+Example:
+
+```json
+{
+  "topic": "Java",
+  "level": "beginner",
+  "question": "What is a class in Java?",
+  "source": "Saarthi Learning Library"
+}
+
 MIT
