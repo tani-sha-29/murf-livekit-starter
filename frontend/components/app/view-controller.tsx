@@ -51,7 +51,7 @@ export function ViewController({ appConfig }: ViewControllerProps) {
   const [micError, setMicError] = useState(false);
 
   const wasConnected = useRef(false);
-  const practiceRequestSent = useRef(false);
+  const initialRequestSent = useRef(false);
 
   /*
    * Remember that a call was actually connected.
@@ -73,14 +73,19 @@ export function ViewController({ appConfig }: ViewControllerProps) {
   useEffect(() => {
   if (
     isConnected &&
-    practiceTopic &&
-    !practiceRequestSent.current
+    !initialRequestSent.current
   ) {
-    practiceRequestSent.current = true;
+    initialRequestSent.current = true;
 
-    send(
-      `Start a ${practiceTopic} beginner practice session. Ask me one practice question from the learning library.`
-    );
+    if (practiceTopic) {
+      send(
+        `Start a ${practiceTopic} beginner practice session. Ask me one practice question from the learning library.`
+      );
+    } else {
+      send(
+        `Start a normal learning conversation. Greet me naturally and ask what I would like to learn or explore today.`
+      );
+    }
   }
 }, [isConnected, practiceTopic, send]);
 
