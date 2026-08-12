@@ -1,8 +1,16 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Sparkles, BookOpen, MessageCircle, Globe2 } from 'lucide-react';
+
 import { useRouter } from 'next/navigation';
+import {
+  ArrowRight,
+  Sparkles,
+  BookOpen,
+  MessageCircle,
+  Globe2,
+} from 'lucide-react';
+import Link from 'next/link';
 
 interface WelcomeViewProps {
   startButtonText: string;
@@ -188,7 +196,37 @@ export const WelcomeView = ({
             You can upload PDFs, Word documents, and more.
           </p>
         </div>
-      </section>
+      <Link
+        href="/learner/support"
+        className="rounded-2xl border border-[#E9D9A8] bg-[#FFF8E5] p-5 transition hover:-translate-y-0.5 hover:shadow-md"
+      >
+      <div className="text-2xl">👩‍🏫</div>
+
+      <h3 className="mt-3 font-semibold">
+      My Support
+      </h3>
+
+      <p className="mt-1 text-sm text-[#686E78]">
+        Check your human-support requests and responses.
+      </p>
+    </Link>
+    <Link
+    href="/admin/support"
+    className="group rounded-3xl border border-[#D8D2C4] bg-[#F5F5F2] p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
+    >
+    <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#18202A] text-white">
+      👩‍🏫
+    </div>
+
+    <h3 className="font-bold">
+      Support Dashboard
+    </h3>
+
+    <p className="mt-2 text-sm leading-6 text-[#777268]">
+      Review learner requests, respond to escalations, and manage support.
+    </p>
+</Link>
+</section>
 
       {/* FOOTER */}
       <p className="pb-5 text-center text-xs text-[#99948a]">

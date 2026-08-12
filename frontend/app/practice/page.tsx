@@ -68,6 +68,7 @@ export default function PracticePage() {
 
   {/* Spring Boot */}
   <button
+    onClick={() => router.push('/practice/spring-boot')}
     className="group rounded-3xl border border-black/10 bg-white/80 p-6 text-left shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
   >
     <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E9DDFF] text-2xl">
@@ -89,6 +90,7 @@ export default function PracticePage() {
 
   {/* Python */}
   <button
+    onClick={() => router.push('/practice/python')}
     className="group rounded-3xl border border-black/10 bg-white/80 p-6 text-left shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
   >
     <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#DDF7E8] text-2xl">

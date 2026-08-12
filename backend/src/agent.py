@@ -750,6 +750,70 @@ Therefore:
 - Avoid emojis.
 - Avoid unnecessary technical language.
 - Keep responses conversational.
+
+============================================================
+HUMAN HELP / ESCALATION
+============================================================
+
+Saarthi should recognize when a learner genuinely needs human
+support instead of continuing to answer normally.
+
+Escalate only for meaningful situations such as:
+
+1. The learner explicitly asks for a human, teacher, mentor,
+   or support person.
+
+2. The learner is repeatedly struggling with a concept and
+   clearly says they are unable to continue or need human help.
+
+3. The learner becomes significantly frustrated or overwhelmed
+   and clearly asks for human assistance.
+
+Do NOT escalate because the learner:
+
+- gives a wrong answer
+- asks a difficult question
+- needs an explanation repeated once
+- makes a normal mistake
+- simply says they do not understand something
+
+Before creating a human-support request:
+
+1. Explain briefly that a human can help.
+2. Explain what information would be shared.
+3. Ask for the learner's permission.
+4. Wait for a clear YES.
+5. Only after YES, create the escalation request.
+
+Each escalation must contain:
+
+- reason
+- topic
+- concise learner summary
+- urgency: LOW, MEDIUM, or HIGH
+
+Urgency rules:
+
+LOW:
+Normal request for human learning assistance.
+
+MEDIUM:
+Repeated struggle, significant frustration, or difficulty
+continuing the learning session.
+
+HIGH:
+The learner explicitly asks for urgent/immediate human help
+or clearly says they cannot continue without human assistance.
+
+Never create an escalation without learner permission.
+
+Never claim that a human request was created unless the
+escalation tool actually succeeds.
+Never call create_escalation until the learner has clearly
+agreed to create a human-support request.
+
+Pass permission_confirmed=true only after an explicit
+affirmative response such as "yes", "okay", "sure", or "please do".
 """
 
 
@@ -1083,6 +1147,133 @@ Never reveal internal database information.
             cursor.close()
             conn.close()
 
+    
+    # ========================================================
+    # ESCALATE TO HUMAN
+    # ========================================================
+
+    @function_tool()
+    async def create_escalation(
+        self,
+        context: RunContext,
+        reason: str,
+        topic: str,
+        summary: str,
+        urgency: str,
+        permission_confirmed: bool,
+) -> dict:
+        """
+        Create a human-support request after the learner has
+        explicitly given permission.
+        """
+
+
+        if not permission_confirmed:
+            return {
+                "success": False,
+                "message": (
+                    "Learner permission is required before creating "
+                    "a human-support request."
+            ),
+        }
+
+        urgency = urgency.strip().upper()
+
+        if urgency not in {"LOW", "MEDIUM", "HIGH"}:
+            urgency = "LOW"
+
+    
+        connection = None
+        cursor = None
+
+        try:
+            connection = get_db_connection()
+            cursor = connection.cursor()
+
+        
+            import uuid
+
+            reference_id = (
+                f"HELP-{uuid.uuid4().hex[:8].upper()}"
+            )
+
+            cursor.execute(
+                """
+                INSERT INTO support_requests (
+                    reference_id,
+                    user_id,
+                    reason,
+                    topic,
+                    summary,
+                    urgency,
+                    status
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    reference_id,
+                    self.user_id,
+                    reason.strip(),
+                    topic.strip(),
+                    summary.strip(),
+                    urgency,
+                    "OPEN",
+                ),
+            )
+
+            connection.commit()
+
+
+            logger.info(
+                "Human support request created: %s",
+                reference_id
+            )
+
+            print("\n===================================")
+            print("🔥 HUMAN SUPPORT REQUEST CREATED")
+            print("REFERENCE:", reference_id)
+            print("USER ID:", self.user_id)
+            print("REASON:", reason)
+            print("TOPIC:", topic)
+            print("URGENCY:", urgency)
+            print("STATUS: OPEN")
+            print("SUMMARY:", summary)
+            print("===================================\n")
+
+        
+            return {
+                "success": True,
+                "reference_id": reference_id,
+                "status": "OPEN",
+                "urgency": urgency,
+                "message": (
+                    f"Human support request {reference_id} "
+                    f"has been created successfully."
+               ),
+            }
+
+        except Exception as e:
+            if connection:
+                connection.rollback()
+
+            logger.error(
+                "Escalation creation failed: %s",
+                e
+            )
+
+            return {
+                "success": False,
+                "message": (
+                    "Unable to create the human-support request."
+            ),
+        }
+
+        finally:
+            if cursor:
+                cursor.close()
+
+            if connection:
+                connection.close()
 
 # ============================================================
 # LIVEKIT SERVER
