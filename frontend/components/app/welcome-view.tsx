@@ -226,6 +226,22 @@ export const WelcomeView = ({
       Review learner requests, respond to escalations, and manage support.
     </p>
 </Link>
+<Link
+  href="/admin/analytics"
+  className="group rounded-3xl border border-[#D8D2C4] bg-[#F5F5F2] p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
+>
+  <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#18202A] text-white">
+    📊
+  </div>
+
+  <h3 className="font-bold">
+    Learning Analytics
+  </h3>
+
+  <p className="mt-2 text-sm leading-6 text-[#777268]">
+    Track calls, learning outcomes, success rates, and learner impact.
+  </p>
+</Link>
 </section>
 
       {/* FOOTER */}

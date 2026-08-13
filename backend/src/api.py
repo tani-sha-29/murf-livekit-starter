@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Any, cast
 
 from pydantic import BaseModel
 
@@ -218,5 +219,62 @@ def get_user_support_requests(user_id: str):
         if connection:
             connection.close()
 
-    
-    
+
+@app.get("/analytics/calls")
+def get_call_analytics():
+    connection = None
+    cursor = None
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        cursor.execute(
+            """
+            SELECT
+                COUNT(*) AS total_calls,
+                SUM(
+                    CASE
+                        WHEN outcome = 'SUCCESS' THEN 1
+                        ELSE 0
+                    END
+                ) AS successful_calls,
+                SUM(
+                    CASE
+                        WHEN outcome = 'FAILED' THEN 1
+                        ELSE 0
+                    END
+                ) AS failed_calls
+            FROM call_analytics
+            """
+        )
+
+        raw_row = cursor.fetchone()
+
+        if raw_row is None:
+            return {
+                "total_calls": 0,
+                "successful_calls": 0,
+                "failed_calls": 0,
+            }
+
+        row = cast(dict[str, Any], raw_row)
+
+        return {
+            "total_calls": row.get("total_calls", 0),
+            "successful_calls": row.get("successful_calls", 0),
+            "failed_calls": row.get("failed_calls", 0),
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch call analytics: {e}",
+        )
+
+    finally:
+        if cursor:
+            cursor.close()
+
+        if connection:
+            connection.close()

@@ -1,6 +1,8 @@
+import asyncio
 import logging
 import os
 import mysql.connector
+import uuid
 
 from dotenv import load_dotenv
 from livekit import rtc
@@ -193,6 +195,10 @@ Before EVERY response:
 3. Do NOT continue the previous language automatically.
 4. Respond using the language/style of the CURRENT message.
 
+Always write every language in its own native script.
+Hindi → Devanagari (नमस्ते), never romanized (never "namaste").
+Same rule for all non-English languages.
+
 ------------------------------------------------------------
 ENGLISH
 ------------------------------------------------------------
@@ -203,16 +209,6 @@ Respond completely in English.
 
 Use Latin/English script.
 
-Example:
-
-Learner:
-"What is inheritance in Java?"
-
-Response:
-
-"Inheritance allows one class to acquire properties and
-behaviour from another class."
-
 ------------------------------------------------------------
 HINDI
 ------------------------------------------------------------
@@ -221,22 +217,7 @@ If the learner speaks Hindi:
 
 Respond in Hindi.
 
-IMPORTANT:
-
 Hindi MUST be written using Devanagari script.
-
-Do NOT write Hindi using Roman/English letters.
-
-Example:
-
-Learner:
-
-"जावा में inheritance क्या होता है?"
-
-Response:
-
-"Java में inheritance का मतलब है कि एक class दूसरी class
-के properties और methods को use कर सकती है।"
 
 ------------------------------------------------------------
 HINGLISH
@@ -246,76 +227,8 @@ If the learner mixes Hindi and English:
 
 Use natural Hinglish.
 
-IMPORTANT:
-
-English words remain in Latin script.
-
-Hindi words MUST use Devanagari script.
-
-Never convert Hindi into Roman Hindi.
-
-Example:
-
-Learner:
-
-"Java में inheritance क्या होता है?"
-
-Correct response:
-
-"Java में inheritance का मतलब है कि एक class दूसरी class
-के properties और methods को use कर सकती है।"
-
-Incorrect response:
-
-"Java mein inheritance ka matlab hai..."
-
-------------------------------------------------------------
-LANGUAGE SWITCHING
-------------------------------------------------------------
-
-The learner can switch language at ANY moment.
-
-You MUST detect the language of the CURRENT utterance.
-
-Example:
-
-Previous:
-
-Learner:
-"मुझे Java समझाओ।"
-
-Saarthi:
-"Java में class एक blueprint की तरह होती है।"
-
-Then learner says:
-
-"Okay, now explain inheritance in English."
-
-You MUST immediately respond in English.
-
-Do NOT continue speaking Hindi just because the previous
-conversation was in Hindi.
-
-Similarly:
-
-Previous:
-"Explain Spring Boot in English."
-
-Then learner says:
-
-"अब मुझे हिंदी में समझाओ।"
-
-Immediately switch to Hindi using Devanagari script.
-
-If the learner uses Hinglish:
-
-Use English technical words in Latin script and Hindi words
-in Devanagari.
-
-DO NOT ask the learner to explicitly say:
-"Answer in English."
-
-Detect the language automatically.
+English technical words remain in Latin script.
+Hindi words use Devanagari script.
 
 ============================================================
 LEARNING EXERCISE TOOL
@@ -327,32 +240,11 @@ This tool is the ONLY source for practice exercises.
 
 Use get_learning_exercise whenever the learner wants to practice.
 
-Examples:
-
-"Give me a Java question."
-"Give me a Java exercise."
-"Give me something to solve."
-"Give me another question."
-"Give me one more."
-"Next question."
-"Give me a different question."
-"I want another Java question."
-"Quiz me on Java."
-"I want to practice Spring Boot."
-
-IMPORTANT:
-
 If the learner asks for another, one more, next, different,
-or new exercise after a previous exercise, you MUST call
+or new exercise after a previous exercise, call
 get_learning_exercise again.
 
-Do NOT answer the request yourself.
-
-Do NOT create a question yourself.
-
-Do NOT modify or invent a question.
-
-The learning library is the source of truth.
+Do NOT invent exercises yourself.
 
 ------------------------------------------------------------
 WHEN TOOL RETURNS success = true
@@ -360,84 +252,28 @@ WHEN TOOL RETURNS success = true
 
 Use the EXACT question returned by the tool.
 
-Do not rewrite it.
-
-Do not replace it.
-
-Do not create another question.
-
-Present the returned question to the learner.
+Do not rewrite or replace it.
 
 ------------------------------------------------------------
 WHEN TOOL RETURNS success = false
 ------------------------------------------------------------
 
-Do NOT create a question yourself.
+Do NOT create a replacement exercise yourself.
 
-Do NOT generate a replacement question.
-
-Tell the learner that Saarthi currently does not have another
-suitable exercise in its learning library.
-
-If appropriate, suggest another topic that may have exercises.
-
-------------------------------------------------------------
-IMPORTANT
-------------------------------------------------------------
-
-If the learner says:
-
-"Give me one more."
-
-and the previous exercise was Java beginner,
-
-call:
-
-get_learning_exercise(
-    topic="Java",
-    level="beginner"
-)
-
-If the tool returns the next Java question, use that exact
-question.
-
-If the tool returns success=false because all Java beginner
-questions have already been used, tell the learner that there
-are no more Java beginner exercises currently available.
-
-NEVER generate your own replacement question.
+Explain that another suitable exercise is currently unavailable.
 
 ============================================================
 PRACTICE MODE
 ============================================================
 
 When the learner starts a practice session from the Practice
-section, the frontend may send a message such as:
+section, the frontend may send:
 
 "Start a Java beginner practice session."
 
 Treat this as an explicit request to practice.
 
-You MUST call get_learning_exercise using the topic and level
-specified in that message.
-
-For example:
-
-"Start a Java beginner practice session."
-
-→ topic = "Java"
-→ level = "beginner"
-
-After receiving the exercise:
-
-1. Use the exact question returned by the tool.
-2. Ask that question to the learner.
-3. Do not invent or modify the question.
-4. Do not tell the learner about the internal tool or dataset.
-
-If the tool returns success=false, explain that there is
-currently no suitable exercise available in the learning
-library.
+Call get_learning_exercise using the topic and level.
 
 ============================================================
 CONVERSATION MEMORY
@@ -465,227 +301,28 @@ Do NOT mention:
 - user IDs
 - memory_context
 
-to the learner.
-
 ============================================================
-RETURNING LEARNER
-============================================================
-
-If learner memory contains a name:
-
-Greet the learner naturally by name.
-
-If previous topics are available:
-
-Refer to them naturally when useful.
-
-For example:
-
-"Namaste Tanisha! Welcome back. Last time we were exploring
-Java and Spring Boot. Would you like to continue from there
-or explore something new?"
-
-Do NOT repeat exactly the same greeting every time.
-
-Do not expose database fields.
-
-============================================================
-NEW LEARNER
-============================================================
-
-If there is no learner memory:
-
-Treat the learner as a new learner.
-
-Do not pretend to know their name.
-
-Do not claim to remember previous learning.
-
-============================================================
-MEMORY SAVING 
+MEMORY SAVING
 ============================================================
 
 You have a tool called save_memory.
 
-The save_memory tool is the ONLY mechanism that persists
-learner information across conversations.
+The save_memory tool is the ONLY mechanism that persists learner
+information across conversations.
 
-Your job is to recognize useful information about the learner
-during natural conversation.
+When useful stable learning-related information is identified,
+ask the learner whether they want Saarthi to remember it.
 
-Do NOT limit memory detection to the learner's name.
-
-Potentially useful information may include, but is not limited to:
-
-- name
-- learning level
-- subjects or topics the learner is studying
-- skills the learner is currently learning
-- areas where the learner repeatedly struggles
-- recurring mistakes
-- learning goals
-- preferred learning topics
-- other stable learning-related information that would
-  genuinely help Saarthi provide better learning support later
-- At the end of convo ask the learner if they want to save the information for future learning support and then remember the key points.
-
-Do NOT save ordinary conversation, temporary statements,
-questions, opinions, or information that would not be useful
-for future learning support.
-
-------------------------------------------------------------
-WHEN TO ASK FOR PERMISSION
-------------------------------------------------------------
-
-When you identify useful learner information that may be
-valuable in future conversations, ask the learner whether
-they want Saarthi to remember it.
-
-Do this naturally during the conversation.
-
-Do NOT wait for the learner to say:
-
-- "save this"
-- "remember this"
-- "store this"
-- "please save this"
-
-The learner does NOT need to explicitly request saving.
-
-For example:
-
-Learner:
-"I'm currently learning Python."
-
-Saarthi:
-"Would you like me to remember that you're learning Python
-so I can help you better next time?"
-
-Another example:
-
-Learner:
-"I'm a beginner at Java and I often struggle with inheritance."
-
-Saarthi:
-"Would you like me to remember that you're a beginner in
-Java and that inheritance is something you find difficult?"
-
-Another example:
-
-Learner:
-"I want to improve my English speaking."
-
-Saarthi:
-"Would you like me to remember that you're working on
-improving your English speaking?"
-
-------------------------------------------------------------
-WAIT FOR PERMISSION
-------------------------------------------------------------
-
-After asking whether the learner wants the information
-remembered:
+After asking:
 
 STOP.
 
 Wait for the learner's response.
 
-Do NOT call save_memory yet.
-
-------------------------------------------------------------
-EXPLICIT AGREEMENT
-------------------------------------------------------------
-
-If the learner clearly agrees, call save_memory IMMEDIATELY.
-
-Examples of agreement include:
-
-- "yes"
-- "yes remember it"
-- "sure"
-- "okay"
-- "please remember"
-- "remember that"
-- "haan"
-- "haan yaad rakhna"
-- "ठीक है"
-- "हाँ"
-- "हाँ याद रखना"
-
-The learner's agreement refers to the information Saarthi
-just asked permission to remember.
-
-Pass that information to save_memory.
-
-Do NOT merely say that you will remember it.
-
-------------------------------------------------------------
-AFTER SAVING
-------------------------------------------------------------
-
-Only AFTER save_memory returns:
-
-"Learner memory saved successfully."
-
-tell the learner that the information was remembered.
-
-For example:
-
-Learner:
-"I'm learning Python."
-
-Saarthi:
-"Would you like me to remember that you're learning Python?"
-
-Learner:
-"Yes."
-
-INTERNAL ACTION:
-CALL save_memory with the relevant learner information.
-
-After successful tool execution:
-
-Saarthi:
-"Got it. I'll keep that in mind for our future learning sessions."
-
-------------------------------------------------------------
-IF LEARNER SAYS NO
-------------------------------------------------------------
-
-If the learner clearly refuses:
-
-- Do NOT call save_memory.
-- Do NOT save the information.
-- Continue the conversation normally.
-
-------------------------------------------------------------
-IF THE ANSWER IS AMBIGUOUS
-------------------------------------------------------------
-
-If the learner's response is unclear or does not clearly
-mean yes or no:
-
-Ask a short clarification such as:
-
-"Would you like me to remember that for future sessions?"
-
-Do not call save_memory until the learner clearly agrees.
-
-------------------------------------------------------------
-IMPORTANT
-------------------------------------------------------------
+Only call save_memory after clear permission.
 
 Never claim that information was saved unless save_memory
-was actually called and returned successfully.
-
-Never automatically save useful learner information without
-asking permission first.
-
-Do not require the learner to explicitly say "save" or
-"remember".
-
-Detect useful learner information naturally from the
-conversation.
+actually returned successfully.
 
 ============================================================
 TEACHING STYLE
@@ -718,9 +355,6 @@ Use conversation context when relevant.
 Do not invent facts.
 
 Do not invent personal information.
-
-If you do not know something and do not have a reliable
-reference, clearly say that you do not know.
 
 ============================================================
 GUARDRAILS
@@ -809,11 +443,99 @@ Never create an escalation without learner permission.
 
 Never claim that a human request was created unless the
 escalation tool actually succeeds.
+
 Never call create_escalation until the learner has clearly
 agreed to create a human-support request.
 
 Pass permission_confirmed=true only after an explicit
 affirmative response such as "yes", "okay", "sure", or "please do".
+
+============================================================
+CALL SUCCESS
+============================================================
+
+When the learner completes a learning activity and can clearly
+state the key takeaway, call mark_learning_success.
+
+Do not call it merely because the learner answered one question.
+
+The learner should complete the agreed activity and demonstrate
+that they understood the key takeaway.
+
+============================================================
+MEMORY DETECTION AND PERMISSION
+============================================================
+
+During every conversation, actively watch for stable learner
+information that could improve future learning support.
+
+Examples:
+
+- "I'm learning Python."
+- "I'm preparing for Java interviews."
+- "I'm a beginner in mathematics."
+- "I keep making mistakes with SQL joins."
+- "I want to improve my English speaking."
+
+When the learner shares such information:
+
+1. Identify the useful information.
+2. Ask permission to remember it.
+3. STOP and wait for the learner's answer.
+4. Do NOT call save_memory before clear permission.
+5. If the learner says YES, immediately call save_memory.
+6. After successful saving, confirm that it was remembered.
+
+Example:
+
+Learner:
+"I'm currently learning Python."
+
+Saarthi:
+"Would you like me to remember that you're learning Python
+so I can tailor future learning sessions?"
+
+Learner:
+"Yes."
+
+→ Call save_memory.
+
+Do NOT wait for the learner to explicitly say
+"remember this" before asking permission.
+
+Do NOT silently save information.
+
+Do NOT claim memory was saved unless save_memory actually
+returns successfully.
+
+============================================================
+SUCCESS TRACKING
+============================================================
+
+During a practice or learning activity, actively track whether
+the learner has completed the task.
+
+A learning interaction is successful when:
+
+1. Saarthi gives the learner a learning task or exercise.
+2. The learner attempts and completes the task.
+3. Saarthi asks the learner to explain the key takeaway
+   or demonstrate what they learned.
+4. The learner gives a reasonable answer demonstrating understanding.
+
+When all four conditions are satisfied:
+
+IMMEDIATELY call mark_learning_success.
+
+Pass:
+- learning_task = the task completed
+- takeaway = the learner's key takeaway
+
+Do not call mark_learning_success merely because:
+- the learner answered one question
+- the learner said "okay"
+- the learner stayed on the call
+- the learner said they understand without demonstrating it.
 """
 
 
@@ -836,6 +558,14 @@ class Assistant(Agent):
 
         self.used_exercises = set()
 
+        self.call_id = f"CALL-{uuid.uuid4().hex[:8].upper()}"
+        self.learning_task = "General learning conversation"
+        self.takeaway_completed = False
+
+        # Save this so the greeting can use the same memory
+        # that was loaded before the session started.
+        self.memory_context = memory_context
+
         super().__init__(
             instructions=f"""
 {SYSTEM_PROMPT}
@@ -856,6 +586,64 @@ Use learner memory only when relevant.
 
 Never reveal internal database information.
 """
+        )
+
+    # ========================================================
+    # INITIAL GREETING
+    # ========================================================
+
+    async def on_enter(self) -> None:
+        """
+        Controlled greeting when this agent becomes active.
+        """
+
+        memory = self.memory_context
+
+        if (
+            "No previous learner information is available"
+            in memory
+        ):
+            greeting = """
+Say exactly:
+
+"Namaste! Main Saarthi hoon, aapka learning companion."
+
+Then say:
+
+"Main aapke saath learning aur practice kar sakta hoon."
+
+Then ask:
+
+"Aaj aap kya seekhna ya practice karna chahenge?"
+
+Do not add another greeting.
+Keep the opening warm, natural, and under 20 seconds.
+"""
+
+        else:
+            greeting = """
+Greet the learner warmly.
+
+Use the learner's saved context naturally if a name or
+previous learning topics are available.
+
+Introduce yourself as:
+
+"Namaste! Main Saarthi hoon, aapka learning companion."
+
+Then ask what the learner would like to learn,
+practice, or explore today.
+
+Do not mention databases, memory systems, tools,
+or internal information.
+
+Keep the opening warm, natural, and under 20 seconds.
+"""
+
+        # LiveKit documents on_enter as the lifecycle hook
+        # for an agent's initial greeting.
+        await self.session.generate_reply(
+            instructions=greeting
         )
 
     # ========================================================
@@ -896,7 +684,6 @@ Never reveal internal database information.
             user = cursor.fetchone()
 
             if user:
-
                 return {
                     "found": True,
                     "user": user,
@@ -915,6 +702,7 @@ Never reveal internal database information.
     # ========================================================
     # GET LEARNING EXERCISES
     # ========================================================
+
     @function_tool()
     async def get_learning_exercise(
         self,
@@ -922,29 +710,28 @@ Never reveal internal database information.
         topic: str,
         level: str,
     ) -> dict:
-        """
-        Use this whenever the learner asks for:
-            - an exercise
-            - a practice question
-            - another question
-            - one more question
-            - the next question
-            - a quiz question
-            - something to solve
 
+        """
+        Get a learning exercise from Saarthi's learning library.
         """
 
         import json
         from pathlib import Path
 
         try:
+
             file_path = (
-                Path(__file__).resolve().parent.parent
+                Path(__file__).resolve().parent
                 / "data"
                 / "learning_exercises.json"
-        )
+            )
 
-            with open(file_path, "r", encoding="utf-8") as file:
+            with open(
+                file_path,
+                "r",
+                encoding="utf-8",
+            ) as file:
+
                 exercises = json.load(file)
 
             topic_lower = topic.strip().lower()
@@ -953,16 +740,19 @@ Never reveal internal database information.
             matching_exercises = [
                 exercise
                 for exercise in exercises
-                if exercise["topic"].strip().lower() == topic_lower
-                and exercise["level"].strip().lower() == level_lower
+                if exercise["topic"].strip().lower()
+                == topic_lower
+                and exercise["level"].strip().lower()
+                == level_lower
             ]
 
             if not matching_exercises:
+
                 return {
                     "success": False,
                     "message": (
-                        f"No {level} exercise is currently available "
-                        f"for {topic}."
+                        f"No {level} exercise is currently "
+                        f"available for {topic}."
                     ),
                     "source": "Saarthi Learning Library",
                 }
@@ -970,7 +760,8 @@ Never reveal internal database information.
             available_exercises = [
                 exercise
                 for exercise in matching_exercises
-                if exercise["question"] not in self.used_exercises
+                if exercise["question"]
+                not in self.used_exercises
             ]
 
             if not available_exercises:
@@ -984,15 +775,23 @@ Never reveal internal database information.
                 return {
                     "success": False,
                     "message": (
-                        f"No more {level} exercises are currently "
-                        f"available for {topic}."
+                        f"No more {level} exercises are "
+                        f"currently available for {topic}."
                     ),
                     "source": "Saarthi Learning Library",
-            }
+                }
 
             exercise = available_exercises[0]
 
-            self.used_exercises.add(exercise["question"])
+            self.used_exercises.add(
+                exercise["question"]
+            )
+
+            self.learning_task = (
+                f"{exercise['topic']} - "
+                f"{exercise['level']} exercise"
+            )
+
             print("===================================")
             print("🔥 GET_LEARNING_EXERCISE TOOL CALLED")
             print("TOPIC:", topic)
@@ -1009,19 +808,22 @@ Never reveal internal database information.
             }
 
         except Exception as e:
-            logger.error(f"Exercise lookup failed: {e}")
+
+            logger.error(
+                f"Exercise lookup failed: {e}"
+            )
 
             return {
                 "success": False,
                 "message": (
-                    "The learning exercise library is temporarily "
-                     "unavailable."
-            ),
-            "source": "Saarthi Learning Library",
-        }
-    
+                    "The learning exercise library is "
+                    "temporarily unavailable."
+                ),
+                "source": "Saarthi Learning Library",
+            }
+
     # ========================================================
-    # SAVE MEMORY
+    # REQUEST MEMORY PERMISSION
     # ========================================================
 
     @function_tool()
@@ -1030,12 +832,9 @@ Never reveal internal database information.
         context: RunContext,
         information: str,
     ) -> str:
-        """
-        Use this when the learner shares useful personal learning
-        information that could be remembered for future conversations.
 
-        Ask the learner whether they want Saarthi to remember it.
-        Do NOT save anything yet.
+        """
+        Ask whether learner information should be remembered.
         """
 
         self.pending_memory = information
@@ -1047,9 +846,10 @@ Never reveal internal database information.
         print("===================================\n")
 
         return (
-        f"I learned this information: {information}. "
-        "Would you like me to remember this so I can help you better next time?"
-    )
+            f"I learned this information: {information}. "
+            "Would you like me to remember this so I can "
+            "help you better next time?"
+        )
 
     # ========================================================
     # SAVE MEMORY
@@ -1059,7 +859,7 @@ Never reveal internal database information.
     async def save_memory(
         self,
         context: RunContext,
-        name: str="",
+        name: str = "",
         learning_level: str = "",
         topics_covered: str = "",
         recurring_mistakes: str = "",
@@ -1074,25 +874,8 @@ Never reveal internal database information.
         print("MISTAKES:", recurring_mistakes)
         print("===================================\n")
 
-        """
-        Save or update useful learner information.
-
-        IMPORTANT:
-        Only call this after the learner has explicitly agreed
-        that Saarthi can remember the information.
-        """
-
         conn = get_db_connection()
         cursor = conn.cursor()
-
-        print("===================================")
-        print("SAVING LEARNER MEMORY")
-        print("USER ID:", self.user_id)
-        print("NAME:", name)
-        print("LEVEL:", learning_level)
-        print("TOPICS:", topics_covered)
-        print("MISTAKES:", recurring_mistakes)
-        print("===================================")
 
         try:
 
@@ -1108,10 +891,22 @@ Never reveal internal database information.
                 VALUES (%s, %s, %s, %s, %s)
 
                 ON DUPLICATE KEY UPDATE
-                name = COALESCE(NULLIF(VALUES(name), ''), name),
-                learning_level = COALESCE(NULLIF(VALUES(learning_level), ''), learning_level),
-                topics_covered = COALESCE(NULLIF(VALUES(topics_covered), ''), topics_covered),
-                recurring_mistakes = COALESCE(NULLIF(VALUES(recurring_mistakes), ''), recurring_mistakes),
+                name = COALESCE(
+                    NULLIF(VALUES(name), ''),
+                    name
+                ),
+                learning_level = COALESCE(
+                    NULLIF(VALUES(learning_level), ''),
+                    learning_level
+                ),
+                topics_covered = COALESCE(
+                    NULLIF(VALUES(topics_covered), ''),
+                    topics_covered
+                ),
+                recurring_mistakes = COALESCE(
+                    NULLIF(VALUES(recurring_mistakes), ''),
+                    recurring_mistakes
+                ),
                 last_interaction = CURRENT_TIMESTAMP
                 """,
                 (
@@ -1125,9 +920,9 @@ Never reveal internal database information.
 
             conn.commit()
 
-
             logger.info(
-                f"Memory saved successfully for user: {self.user_id}"
+                f"Memory saved successfully for user: "
+                f"{self.user_id}"
             )
 
             return "Learner memory saved successfully."
@@ -1137,7 +932,8 @@ Never reveal internal database information.
             conn.rollback()
 
             logger.error(
-                f"Memory save failed for {self.user_id}: {e}"
+                f"Memory save failed for "
+                f"{self.user_id}: {e}"
             )
 
             return "Unable to save learner memory."
@@ -1147,7 +943,6 @@ Never reveal internal database information.
             cursor.close()
             conn.close()
 
-    
     # ========================================================
     # ESCALATE TO HUMAN
     # ========================================================
@@ -1161,37 +956,34 @@ Never reveal internal database information.
         summary: str,
         urgency: str,
         permission_confirmed: bool,
-) -> dict:
-        """
-        Create a human-support request after the learner has
-        explicitly given permission.
-        """
+    ) -> dict:
 
+        """
+        Create a human-support request after learner permission.
+        """
 
         if not permission_confirmed:
+
             return {
                 "success": False,
                 "message": (
-                    "Learner permission is required before creating "
-                    "a human-support request."
-            ),
-        }
+                    "Learner permission is required before "
+                    "creating a human-support request."
+                ),
+            }
 
         urgency = urgency.strip().upper()
 
         if urgency not in {"LOW", "MEDIUM", "HIGH"}:
             urgency = "LOW"
 
-    
         connection = None
         cursor = None
 
         try:
+
             connection = get_db_connection()
             cursor = connection.cursor()
-
-        
-            import uuid
 
             reference_id = (
                 f"HELP-{uuid.uuid4().hex[:8].upper()}"
@@ -1223,10 +1015,9 @@ Never reveal internal database information.
 
             connection.commit()
 
-
             logger.info(
                 "Human support request created: %s",
-                reference_id
+                reference_id,
             )
 
             print("\n===================================")
@@ -1240,7 +1031,6 @@ Never reveal internal database information.
             print("SUMMARY:", summary)
             print("===================================\n")
 
-        
             return {
                 "success": True,
                 "reference_id": reference_id,
@@ -1249,31 +1039,205 @@ Never reveal internal database information.
                 "message": (
                     f"Human support request {reference_id} "
                     f"has been created successfully."
-               ),
+                ),
             }
 
         except Exception as e:
+
             if connection:
                 connection.rollback()
 
             logger.error(
                 "Escalation creation failed: %s",
-                e
+                e,
             )
 
             return {
                 "success": False,
                 "message": (
                     "Unable to create the human-support request."
-            ),
-        }
+                ),
+            }
 
         finally:
+
             if cursor:
                 cursor.close()
 
             if connection:
                 connection.close()
+
+    # ========================================================
+    # CALL ANALYTICS - SUCCESS
+    # ========================================================
+
+    @function_tool()
+    async def mark_learning_success(
+        self,
+        context: RunContext,
+        learning_task: str,
+        takeaway: str,
+    ) -> dict:
+
+        """
+        Mark the current learning interaction as successful.
+        """
+
+        connection = None
+        cursor = None
+
+        try:
+
+            connection = get_db_connection()
+            cursor = connection.cursor()
+
+            cursor.execute(
+    """
+    INSERT IGNORE INTO call_analytics (
+        call_id,
+        user_id,
+        channel,
+        outcome,
+        learning_task,
+        takeaway_completed
+    )
+    VALUES (%s, %s, %s, %s, %s, %s)
+    """,
+    (
+        self.call_id,
+        self.user_id,
+        "BROWSER",
+        "FAILED",
+        learning_task.strip(),
+        False,
+    ),
+)
+
+            cursor.execute(
+    """
+    UPDATE call_analytics
+    SET
+        outcome = 'SUCCESS',
+        learning_task = %s,
+        takeaway_completed = TRUE
+    WHERE call_id = %s
+    """,
+    (
+        learning_task.strip(),
+        self.call_id,
+    ),
+)
+
+            connection.commit()
+
+            self.takeaway_completed = True
+            self.learning_task = learning_task.strip()
+
+            logger.info(
+                "Learning success recorded: %s | task=%s | "
+                "takeaway=%s",
+                self.call_id,
+                learning_task,
+                takeaway,
+            )
+
+            return {
+                "success": True,
+                "call_id": self.call_id,
+                "outcome": "SUCCESS",
+                "takeaway_completed": True,
+            }
+
+        except Exception as e:
+
+            if connection:
+                connection.rollback()
+
+            logger.error(
+                "Failed to record learning success: %s",
+                e,
+            )
+
+            return {
+                "success": False,
+                "message": (
+                    "Unable to record learning outcome."
+                ),
+            }
+
+        finally:
+
+            if cursor:
+                cursor.close()
+
+            if connection:
+                connection.close()
+
+    # ========================================================
+    # CALL ANALYTICS - FAILED
+    # ========================================================
+
+    async def record_call_outcome(
+        self,
+        outcome: str,
+    ) -> None:
+
+        connection = None
+        cursor = None
+
+        try:
+
+            connection = get_db_connection()
+            cursor = connection.cursor()
+
+            cursor.execute(
+    """
+    INSERT IGNORE INTO call_analytics (
+        call_id,
+        user_id,
+        channel,
+        outcome,
+        learning_task,
+        takeaway_completed
+    )
+    VALUES (%s, %s, %s, %s, %s, %s)
+    """,
+    (
+        self.call_id,
+        self.user_id,
+        "BROWSER",
+        outcome,
+        self.learning_task,
+        self.takeaway_completed,
+    ),
+)
+
+            connection.commit()
+
+            logger.info(
+                "Call outcome recorded: %s -> %s",
+                self.call_id,
+                outcome,
+            )
+
+        except Exception as e:
+
+            if connection:
+                connection.rollback()
+
+            logger.error(
+                "Failed to record call outcome: %s",
+                e,
+            )
+
+        finally:
+
+            if cursor:
+                cursor.close()
+
+            if connection:
+                connection.close()
+
 
 # ============================================================
 # LIVEKIT SERVER
@@ -1302,11 +1266,11 @@ async def my_agent(ctx: JobContext):
     # --------------------------------------------------------
 
     # For now we are using a fixed user.
-    # Later we will connect this to  frontend login/user ID.
+    # Later we will connect this to frontend authentication.
     user_id = "user_001"
 
     # --------------------------------------------------------
-    # LOAD MEMORY FROM MYSQL
+    # LOAD MEMORY
     # --------------------------------------------------------
 
     user_memory = get_user_memory(user_id)
@@ -1355,18 +1319,15 @@ Do not pretend to know the learner's name or previous topics.
 
     session = AgentSession(
 
-        # Speech → Text
         stt=deepgram.STT(
             model="nova-3",
             language="multi",
         ),
 
-        # LLM
         llm=google.LLM(
             model="gemini-3.5-flash-lite",
         ),
 
-        # Text → Speech
         tts=murf.TTS(
             voice="Samar",
             style="Conversation",
@@ -1377,33 +1338,34 @@ Do not pretend to know the learner's name or previous topics.
             text_pacing=True,
         ),
 
-        # Turn detection
         turn_detection=MultilingualModel(),
 
-        # Voice activity detection
         vad=ctx.proc.userdata["vad"],
 
-        # Generate response before turn is completely finished
         preemptive_generation=True,
     )
 
     # --------------------------------------------------------
-    # CONNECT TO ROOM
+    # ASSISTANT INSTANCE
     # --------------------------------------------------------
-    
+
+    assistant = Assistant(
+        memory_context=memory_context,
+        user_id=user_id,
+    )
+
+    # --------------------------------------------------------
+    # CONNECT
+    # --------------------------------------------------------
+
     await ctx.connect()
 
     # --------------------------------------------------------
-    # START SESSION
+    # SESSION START
     # --------------------------------------------------------
 
     await session.start(
-
-        agent=Assistant(
-            memory_context=memory_context,
-            user_id=user_id,
-        ),
-
+        agent=assistant,
         room=ctx.room,
 
         room_options=room_io.RoomOptions(
@@ -1423,104 +1385,9 @@ Do not pretend to know the learner's name or previous topics.
         ),
     )
 
-    # --------------------------------------------------------
-    # INITIAL GREETING
-    # --------------------------------------------------------
-
-#     if user_memory:
-
-#         name = user_memory.get("name")
-#         topics = user_memory.get("topics_covered")
-
-#         if name and topics:
-
-#             opening = f"""
-# Start the conversation naturally.
-
-# The learner is returning.
-
-# Their name is {name}.
-# Their previous learning topics include {topics}.
-
-# Greet them naturally by name.
-
-# Briefly refer to their previous learning context.
-
-# For example, you can say something like:
-
-# "Namaste {name}! Welcome back. Last time we were exploring
-# {topics}. Would you like to continue from there or explore
-# something new?"
-
-# Do NOT necessarily use that exact sentence.
-
-# Keep it warm and conversational.
-
-# Do not mention databases, memory, tools, or internal information.
-
-# Keep the opening under 20 seconds.
-# """
-
-#         elif name:
-
-#             opening = f"""
-# Start the conversation naturally.
-
-# The learner is returning and their name is {name}.
-
-# Greet them naturally by name.
-
-# Do not mention databases, memory, tools, or internal information.
-
-# Ask what they would like to learn or explore today.
-
-# Keep the opening warm and conversational and under 20 seconds.
-# """
-
-#         else:
-
-#             opening = """
-# Start the conversation naturally.
-
-# The learner is returning, but no name is available.
-
-# Do not invent their name.
-
-# Ask what they would like to learn or explore today.
-
-# Keep the opening warm and conversational and under 20 seconds.
-# """
-
-#     else:
-
-#         opening = """
-# Start the conversation naturally.
-
-# This is a new learner.
-
-# Do not pretend to know their name or previous learning.
-
-# Say:
-
-# "Namaste! Main Saarthi hoon."
-
-# Then briefly explain that they can ask questions,
-# practice skills, or explore ideas with you.
-
-# Finally ask:
-
-# "Aaj aap kis cheez ko samajhna ya explore karna chahenge?"
-
-# Keep the opening warm, natural and under 20 seconds.
-
-# Do not sound like a customer-service bot.
-# """
-
-    # await session.generate_reply(
-    # instructions=opening
-    # )
-
-    
+    # IMPORTANT:
+    # There is intentionally NO additional generate_reply()
+    # here. The Assistant.on_enter() hook handles the greeting.
 
 
 # ============================================================
