@@ -3,6 +3,7 @@ import logging
 import os
 import mysql.connector
 import uuid
+from practice_agent import PracticeAgent
 
 from dotenv import load_dotenv
 from livekit import rtc
@@ -536,6 +537,41 @@ Do not call mark_learning_success merely because:
 - the learner said "okay"
 - the learner stayed on the call
 - the learner said they understand without demonstrating it.
+
+================================
+practice agent
+===================================
+============================================================
+PRACTICE COACH HANDOFF
+============================================================
+
+When the learner explicitly wants to practice a topic,
+use handoff_to_practice.
+
+Examples:
+
+"I want to practice Java."
+"Quiz me on SQL."
+"Let's practice inheritance."
+"Test me on Python."
+
+Do NOT hand off when the learner wants to understand,
+learn, or receive an explanation.
+
+Before handing off, clearly tell the learner:
+
+"I'll connect you with my Practice Coach. You won't need
+to repeat what you're working on."
+
+Pass:
+
+- topic
+- learner level
+- learning goal
+- relevant recent conversation context
+
+The Practice Coach generates questions dynamically about
+the handed-off topic.
 """
 
 
@@ -552,6 +588,7 @@ class Assistant(Agent):
     ) -> None:
 
         self.user_id = user_id
+        self.learner_name = ""
 
         self.pending_memory = None
         self.waiting_for_memory_confirmation = False
@@ -721,7 +758,7 @@ Keep the opening warm, natural, and under 20 seconds.
         try:
 
             file_path = (
-                Path(__file__).resolve().parent
+                Path(__file__).resolve().parent.parent
                 / "data"
                 / "learning_exercises.json"
             )
@@ -1238,6 +1275,37 @@ Keep the opening warm, natural, and under 20 seconds.
             if connection:
                 connection.close()
 
+    # ========================================================
+    # PRACTICE ESPECIALIST
+    # ========================================================
+                
+    @function_tool()
+    async def handoff_to_practice(
+        self,
+        context: RunContext,
+        topic: str,
+        level: str,
+        learning_goal: str,
+        conversation_context: str,
+    ) -> tuple[Agent, str]:
+        """
+        Transfer the learner to Saarthi's Practice Coach.
+        """
+
+        practice_agent = PracticeAgent(
+            user_id=self.user_id,
+            learner_name="",
+            topic=topic.strip(),
+            level=level.strip(),
+            learning_goal=learning_goal.strip(),
+            conversation_context=conversation_context.strip(),
+        )
+
+        return (
+            practice_agent,
+            "I'll connect you with my Practice Coach. "
+            "You won't need to repeat what you're working on."
+        )
 
 # ============================================================
 # LIVEKIT SERVER
@@ -1274,6 +1342,11 @@ async def my_agent(ctx: JobContext):
     # --------------------------------------------------------
 
     user_memory = get_user_memory(user_id)
+    learner_name = (
+    user_memory.get("name", "")
+    if user_memory
+    else ""
+    )
 
     if user_memory:
 
@@ -1353,7 +1426,7 @@ Do not pretend to know the learner's name or previous topics.
         memory_context=memory_context,
         user_id=user_id,
     )
-
+    assistant.learner_name = learner_name
     # --------------------------------------------------------
     # CONNECT
     # --------------------------------------------------------

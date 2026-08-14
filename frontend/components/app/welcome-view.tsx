@@ -30,9 +30,73 @@ export const WelcomeView = ({
   const router = useRouter();
 
   return (
+    
     <main className="min-h-screen overflow-y-auto bg-[#FFFDF7] px-5 py-8 text-[#242321] md:px-10">
+      <nav className="mx-auto flex max-w-6xl items-center justify-between rounded-2xl border border-black/10 bg-white/90 px-4 py-3 shadow-sm backdrop-blur-md">
+  <Link
+    href="/"
+    className="flex items-center gap-3"
+  >
+    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F5C542] font-bold">
+      ✦
+    </div>
+
+    <div>
+      <p className="font-black tracking-tight">Saarthi</p>
+      <p className="text-[10px] text-[#777268]">
+        एक नई राह
+      </p>
+    </div>
+  </Link>
+
+  <div className="hidden items-center gap-1 md:flex">
+    <Link
+      href="/"
+      className="rounded-xl px-4 py-2 text-sm font-semibold hover:bg-[#FFF8E5]"
+    >
+      Home
+    </Link>
+
+    <Link
+      href="/practice"
+      className="rounded-xl px-4 py-2 text-sm font-semibold hover:bg-[#FFF8E5]"
+    >
+      Practice
+    </Link>
+
+    <Link
+      href="/learner/support"
+      className="rounded-xl px-4 py-2 text-sm font-semibold hover:bg-[#FFF8E5]"
+    >
+      My Support
+    </Link>
+
+    <Link
+      href="/admin/support"
+      className="rounded-xl px-4 py-2 text-sm font-semibold hover:bg-[#FFF8E5]"
+    >
+      Admin
+    </Link>
+  </div>
+
+  <div className="flex items-center gap-2">
+    <Link
+      href="/learner/support"
+      className="rounded-xl border border-black/10 bg-[#FFF8E5] px-3 py-2 text-sm"
+    >
+      👩‍🏫
+    </Link>
+
+    <button
+      type="button"
+      className="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm md:hidden"
+    >
+      ☰
+    </button>
+  </div>
+</nav>
       
-      {/* TOP BRAND */}
+      {/* TOP BRAND
       <header className="mx-auto flex max-w-6xl items-center justify-between">
         <div>
           <h1 className="text-2xl font-black tracking-tight md:text-3xl">
@@ -47,7 +111,7 @@ export const WelcomeView = ({
           <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
           Your learning companion
         </div>
-      </header>
+      </header> */}
 
       {/* HERO */}
       <section className="mx-auto grid max-w-6xl items-center gap-6 pt-8 md:grid-cols-2 md:pt-12">
@@ -55,10 +119,10 @@ export const WelcomeView = ({
         {/* LEFT */}
         <div className="order-2 text-center md:order-1 md:text-left">
 
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#F5D76E] bg-[#FFF4B8] px-4 py-2 text-sm font-semibold shadow-sm">
+          {/* <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#F5D76E] bg-[#FFF4B8] px-4 py-2 text-sm font-semibold shadow-sm">
             <Sparkles size={16} />
             Learn · Explore · Grow
-          </div>
+          </div> */}
 
           <h2 className="mx-auto max-w-xl text-5xl font-black leading-[0.95] tracking-[-0.04em] md:mx-0 md:text-7xl">
             A new way to
@@ -196,7 +260,7 @@ export const WelcomeView = ({
             You can upload PDFs, Word documents, and more.
           </p>
         </div>
-      <Link
+      {/* <Link
         href="/learner/support"
         className="rounded-2xl border border-[#E9D9A8] bg-[#FFF8E5] p-5 transition hover:-translate-y-0.5 hover:shadow-md"
       >
@@ -241,7 +305,7 @@ export const WelcomeView = ({
   <p className="mt-2 text-sm leading-6 text-[#777268]">
     Track calls, learning outcomes, success rates, and learner impact.
   </p>
-</Link>
+</Link> */}
 </section>
 
       {/* FOOTER */}
