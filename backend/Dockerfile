@@ -52,6 +52,7 @@ RUN uv run "src/agent.py" download-files
 # --- Production stage ---
 # Build tools (gcc, g++, python3-dev) are not included in the final image
 FROM base
+WORKDIR /app
 
 # Create a non-privileged user that the app will run under.
 # See https://docs.docker.com/build/building/best-practices/#user
@@ -67,6 +68,10 @@ RUN adduser \
 # Copy the application and virtual environment with correct ownership in a single layer
 # This avoids expensive recursive chown and excludes build tools from the final image
 COPY --from=build --chown=appuser:appuser /app /app
+
+# Create a writable cache directory for UV
+RUN mkdir -p /app/.cache/uv \
+    && chown -R appuser:appuser /app/.cache
 
 # Switch to the non-privileged user for all subsequent operations
 # This improves security by not running as root
